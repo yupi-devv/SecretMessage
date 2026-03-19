@@ -1,0 +1,77 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: secret_message_db
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "${DB_PORT}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - secret_network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: secret_message_app
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./uploads:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - secret_network
+    command: >
+      sh -c "
+        echo '=== Running database migrations ===' &&
+        uv run alembic upgrade head &&
+        echo '=== Running tests (continuing even if they fail) ===' &&
+        (uv run pytest tests/test_simple.py -v --tb=short || echo 'Tests failed, but continuing...') &&
+        echo '=== Starting application ===' &&
+        uv run uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+      "
+
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: secret_message_tests
+    env_file:
+      - .env
+    volumes:
+      - ./src:/app/src
+      - ./tests:/app/tests
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - secret_network
+    command: >
+      sh -c "
+        echo '=== Waiting for database... ===' &&
+        sleep 3 &&
+        echo '=== Running database migrations ===' &&
+        uv run alembic upgrade head &&
+        echo '=== Running tests ===' &&
+        uv run pytest tests/test_simple.py -v --tb=short --color=yes
+      "
+
+volumes:
+  postgres_data:
+
+networks:
+  secret_network:
+    driver: bridge

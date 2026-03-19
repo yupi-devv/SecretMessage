@@ -1,0 +1,1462 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Secret Message</title>
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%2360a5fa;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%238b5cf6;stop-opacity:1' /%3E%3C/linearGradient%3E%3Cfilter id='glow'%3E%3CfeGaussianBlur in='SourceGraphic' stdDeviation='3' result='blur'/%3E%3CfeMerge%3E%3CfeMergeNode in='blur'/%3E%3CfeMergeNode in='SourceGraphic'/%3E%3C/feMerge%3E%3C/filter%3E%3C/defs%3E%3Crect width='100' height='100' rx='22' fill='url(%23grad)'/%3E%3Cg filter='url(%23glow)'%3E%3Crect x='28' y='48' width='44' height='38' rx='6' fill='white' opacity='0.95'/%3E%3Cpath d='M 28 48 L 28 35 Q 28 22 50 22 Q 72 22 72 35 L 72 48' stroke='white' stroke-width='7' fill='none' opacity='0.95'/%3E%3Ccircle cx='50' cy='67' r='5' fill='%2360a5fa'/%3E%3Crect x='47' y='67' width='6' height='14' rx='3' fill='%2360a5fa'/%3E%3C/g%3E%3C/svg%3E">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+
+        :root {
+            --bg-dark: #0a0a0f;
+            --bg-card: #13131a;
+            --bg-input: #1a1a24;
+            --bg-hover: #22222e;
+            --primary: #3b82f6;
+            --primary-light: #60a5fa;
+            --primary-dark: #2563eb;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --text-primary: #f9fafb;
+            --text-secondary: #d1d5db;
+            --text-muted: #9ca3af;
+            --border: rgba(59, 130, 246, 0.2);
+            --shadow: rgba(0, 0, 0, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            min-height: 100vh;
+            padding: 16px;
+            color: var(--text-primary);
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(139, 92, 246, 0.15) 0%, transparent 50%);
+            animation: breathe 8s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes breathe {
+
+            0%,
+            100% {
+                opacity: 0.5;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.8;
+                transform: scale(1.05);
+            }
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: var(--bg-card);
+            border-radius: 24px;
+            box-shadow:
+                0 20px 60px var(--shadow),
+                0 0 1px var(--border),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            overflow: hidden;
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            position: relative;
+            z-index: 1;
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            padding: 56px 24px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background:
+                radial-gradient(circle at center, rgba(255, 255, 255, 0.1) 0%, transparent 60%);
+            animation: rotateGlow 20s linear infinite;
+        }
+
+        @keyframes rotateGlow {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            animation: logoFloat 3s ease-in-out infinite;
+            filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.4));
+        }
+
+        @keyframes logoFloat {
+
+            0%,
+            100% {
+                transform: translateY(0px) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-12px) rotate(5deg);
+            }
+        }
+
+        .header h1 {
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 10px;
+            text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            letter-spacing: -0.5px;
+        }
+
+        .header p {
+            opacity: 0.95;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .content {
+            padding: 32px 24px;
+        }
+
+        .form-group {
+            margin-bottom: 28px;
+            animation: fadeIn 0.5s ease-out backwards;
+        }
+
+        .form-group:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .form-group:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .form-group:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        label {
+            display: block;
+            margin-bottom: 12px;
+            font-weight: 700;
+            color: var(--text-primary);
+            font-size: 15px;
+            letter-spacing: 0.3px;
+        }
+
+        textarea,
+        input[type="number"] {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid var(--border);
+            border-radius: 14px;
+            background: var(--bg-input);
+            color: var(--text-primary);
+            font-size: 15px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: inherit;
+            font-weight: 500;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 140px;
+            line-height: 1.6;
+        }
+
+        textarea:focus,
+        input[type="number"]:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: var(--bg-hover);
+            box-shadow:
+                0 0 0 4px rgba(59, 130, 246, 0.15),
+                0 8px 20px rgba(59, 130, 246, 0.1);
+            transform: translateY(-2px);
+        }
+
+        textarea::placeholder,
+        input::placeholder {
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .expiry-selector {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .expiry-btn {
+            padding: 14px;
+            background: var(--bg-input);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .expiry-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: var(--primary);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.4s, height 0.4s;
+            z-index: 0;
+        }
+
+        .expiry-btn:hover {
+            border-color: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(59, 130, 246, 0.2);
+        }
+
+        .expiry-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .expiry-btn.active::before {
+            width: 200%;
+            height: 200%;
+        }
+
+        .expiry-btn span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .custom-expiry {
+            display: none;
+            margin-top: 14px;
+            padding: 18px;
+            background: var(--bg-input);
+            border-radius: 14px;
+            border: 2px solid var(--border);
+        }
+
+        .custom-expiry.show {
+            display: block;
+            animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .custom-expiry-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin-top: 14px;
+        }
+
+        .custom-input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .custom-input-group label {
+            font-size: 12px;
+            margin-bottom: 8px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            font-weight: 700;
+        }
+
+        .custom-input-group input {
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            background: var(--bg-hover);
+            color: var(--text-primary);
+            font-size: 18px;
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .drop-zone {
+            border: 3px dashed var(--border);
+            border-radius: 16px;
+            padding: 48px 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: var(--bg-input);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .drop-zone::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .drop-zone:hover::before {
+            left: 100%;
+        }
+
+        .drop-zone:hover {
+            border-color: var(--primary);
+            background: rgba(59, 130, 246, 0.05);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.15);
+        }
+
+        .drop-zone.dragover {
+            border-color: var(--primary-light);
+            background: rgba(59, 130, 246, 0.15);
+            transform: scale(1.02);
+            box-shadow: 0 12px 32px rgba(59, 130, 246, 0.3);
+        }
+
+        .drop-zone-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 16px;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-12px);
+            }
+        }
+
+        .drop-zone-text {
+            color: var(--text-primary);
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .drop-zone-hint {
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .files-container {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .files-container.show {
+            display: block;
+            animation: slideDown 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .files-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding: 0 4px;
+        }
+
+        .files-count {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .clear-all {
+            color: var(--danger);
+            font-size: 13px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.2s;
+            padding: 8px 14px;
+            border-radius: 8px;
+        }
+
+        .clear-all:hover {
+            background: rgba(239, 68, 68, 0.15);
+            transform: scale(1.05);
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            background: var(--bg-input);
+            border-radius: 14px;
+            margin-bottom: 10px;
+            border: 2px solid var(--border);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .file-item:hover {
+            background: var(--bg-hover);
+            border-color: var(--primary);
+            transform: translateX(6px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.15);
+        }
+
+        .file-icon {
+            width: 40px;
+            height: 40px;
+            min-width: 40px;
+            margin-right: 16px;
+        }
+
+        .file-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .file-name {
+            font-weight: 700;
+            color: var(--text-primary);
+            font-size: 15px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 4px;
+        }
+
+        .file-size {
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .remove-file {
+            color: var(--danger);
+            cursor: pointer;
+            font-size: 28px;
+            padding: 0 10px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+            line-height: 1;
+        }
+
+        .remove-file:hover {
+            transform: rotate(90deg) scale(1.2);
+            filter: brightness(1.3);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow:
+                0 10px 25px rgba(59, 130, 246, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 400px;
+            height: 400px;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-4px);
+            box-shadow:
+                0 16px 40px rgba(59, 130, 246, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+
+        .btn:active:not(:disabled) {
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn span {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-icon {
+            width: 24px;
+            height: 24px;
+        }
+
+        .result {
+            margin-top: 28px;
+            padding: 24px;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 16px;
+            display: none;
+            border: 2px solid rgba(16, 185, 129, 0.3);
+            animation: scaleIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .result.show {
+            display: block;
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .result h3 {
+            color: var(--success);
+            margin-bottom: 18px;
+            font-size: 22px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .result p {
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .share-section {
+            background: var(--bg-input);
+            border-radius: 14px;
+            padding: 18px;
+            margin-bottom: 12px;
+            border: 2px solid var(--border);
+        }
+
+        .share-link {
+            word-break: break-all;
+            padding: 14px;
+            background: var(--bg-hover);
+            border-radius: 10px;
+            font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+            color: var(--primary-light);
+            font-weight: 700;
+            margin-bottom: 14px;
+            user-select: all;
+            border: 1px solid var(--border);
+        }
+
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .btn-secondary {
+            background: rgba(59, 130, 246, 0.15);
+            border: 2px solid var(--primary);
+            padding: 12px;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: rgba(59, 130, 246, 0.25);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .error {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+            padding: 16px;
+            border-radius: 14px;
+            margin-top: 20px;
+            font-size: 15px;
+            font-weight: 700;
+            display: none;
+            border-left: 4px solid var(--danger);
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-10px);
+            }
+
+            75% {
+                transform: translateX(10px);
+            }
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        .view-container {
+            display: none;
+        }
+
+        .view-container.show {
+            display: block;
+        }
+
+        .message-box {
+            padding: 24px;
+            background: var(--bg-input);
+            border-radius: 16px;
+            margin-bottom: 24px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            line-height: 1.8;
+            color: var(--text-primary);
+            border: 2px solid var(--border);
+            font-size: 16px;
+            font-weight: 500;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .files-title {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: 0.3px;
+        }
+
+        .download-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 14px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 700;
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
+            gap: 12px;
+            font-size: 15px;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(59, 130, 246, 0.4);
+        }
+
+        .download-icon {
+            width: 24px;
+            height: 24px;
+        }
+
+        .expiry-info {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--text-secondary);
+            padding: 16px;
+            border-radius: 14px;
+            margin-top: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            border-left: 4px solid var(--danger);
+        }
+
+        .expiry-info strong {
+            color: var(--text-primary);
+            font-weight: 800;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            font-size: 16px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .loading-spinner {
+            width: 56px;
+            height: 56px;
+            margin: 0 auto 16px;
+            animation: spin 1.5s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(120px);
+            background: var(--bg-card);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 14px;
+            box-shadow:
+                0 12px 40px rgba(0, 0, 0, 0.7),
+                0 0 0 1px var(--border);
+            z-index: 1000;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            backdrop-filter: blur(20px);
+            border: 2px solid var(--primary);
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            background: rgba(59, 130, 246, 0.15);
+            border: 2px solid var(--primary);
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 14px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-bottom: 20px;
+        }
+
+        .back-btn:hover {
+            background: rgba(59, 130, 246, 0.25);
+            transform: translateX(-4px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.2);
+        }
+
+        .expiry-label-hint {
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-top: 6px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-content">
+                <svg class="logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#60a5fa;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
+                        </linearGradient>
+                        <filter id="logoGlow">
+                            <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur" />
+                            <feMerge>
+                                <feMergeNode in="blur" />
+                                <feMergeNode in="SourceGraphic" />
+                            </feMerge>
+                        </filter>
+                    </defs>
+                    <rect width="100" height="100" rx="22" fill="url(#logoGrad)" />
+                    <g filter="url(#logoGlow)">
+                        <rect x="28" y="48" width="44" height="38" rx="6" fill="white" opacity="0.95" />
+                        <path d="M 28 48 L 28 35 Q 28 22 50 22 Q 72 22 72 35 L 72 48" stroke="white" stroke-width="7"
+                            fill="none" opacity="0.95" />
+                        <circle cx="50" cy="67" r="5" fill="#60a5fa" />
+                        <rect x="47" y="67" width="6" height="14" rx="3" fill="#60a5fa" />
+                    </g>
+                </svg>
+                <h1>Secret Message</h1>
+                <p>Безопасные самоуничтожающиеся сообщения</p>
+            </div>
+        </div>
+
+        <div class="content">
+            <div id="createForm" style="display: {% if mode == 'create' %}block{% else %}none{% endif %};">
+                <div class="form-group">
+                    <label>💬 Текст сообщения</label>
+                    <textarea id="message" placeholder="Введите ваше секретное сообщение..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        ⏰ Срок действия
+                        <div class="expiry-label-hint">Выберите время или оставьте бессрочно</div>
+                    </label>
+                    <div class="expiry-selector">
+                        <div class="expiry-btn" data-minutes="0"><span>Бессрочно</span></div>
+                        <div class="expiry-btn" data-minutes="60"><span>1 час</span></div>
+                        <div class="expiry-btn" data-minutes="1440"><span>1 день</span></div>
+                        <div class="expiry-btn" data-minutes="10080"><span>7 дней</span></div>
+                        <div class="expiry-btn" data-minutes="43200"><span>30 дней</span></div>
+                        <div class="expiry-btn" data-minutes="custom"><span>Свое</span></div>
+                    </div>
+                    <div class="custom-expiry" id="customExpiry">
+                        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 10px; font-weight: 600;">
+                            Укажите время жизни сообщения:
+                        </div>
+                        <div class="custom-expiry-inputs">
+                            <div class="custom-input-group">
+                                <label>Дни</label>
+                                <input type="number" id="customDays" min="0" value="0" placeholder="0">
+                            </div>
+                            <div class="custom-input-group">
+                                <label>Часы</label>
+                                <input type="number" id="customHours" min="0" max="23" value="0" placeholder="0">
+                            </div>
+                            <div class="custom-input-group">
+                                <label>Минуты</label>
+                                <input type="number" id="customMinutes" min="0" max="59" value="0" placeholder="0">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>📎 Файлы</label>
+                    <div class="drop-zone" id="dropZone">
+                        <svg class="drop-zone-icon" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <linearGradient id="folderGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
+                                </linearGradient>
+                            </defs>
+                            <path d="M8 18a6 6 0 0 1 6-6h10l4 4h18a6 6 0 0 1 6 6v28a6 6 0 0 1-6 6H14a6 6 0 0 1-6-6V18z"
+                                fill="url(#folderGrad)" opacity="0.3" />
+                            <path d="M8 28a6 6 0 0 1 6-6h36a6 6 0 0 1 6 6v22a6 6 0 0 1-6 6H14a6 6 0 0 1-6-6V28z"
+                                fill="url(#folderGrad)" />
+                            <path d="M32 34v12M26 40l6-6 6 6" stroke="white" stroke-width="3" stroke-linecap="round"
+                                stroke-linejoin="round" fill="none" />
+                        </svg>
+                        <div class="drop-zone-text">Перетащите файлы сюда</div>
+                        <div class="drop-zone-hint">или нажмите для выбора</div>
+                    </div>
+                    <input type="file" id="fileInput" multiple>
+
+                    <div class="files-container" id="filesContainer">
+                        <div class="files-header">
+                            <span class="files-count" id="filesCount">0 файлов</span>
+                            <span class="clear-all" id="clearAll">Очистить</span>
+                        </div>
+                        <div id="filesList"></div>
+                    </div>
+                </div>
+
+                <button class="btn" id="createBtn">
+                    <span>
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="currentColor" />
+                        </svg>
+                        <span>Создать сообщение</span>
+                    </span>
+                </button>
+
+                <div class="error" id="error"></div>
+
+                <div class="result" id="result">
+                    <h3>
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
+                            style="display:inline;vertical-align:middle;margin-right:8px">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                            <polyline points="22 4 12 14.01 9 11.01" />
+                        </svg>
+                        Сообщение создано!
+                    </h3>
+                    <p>Ссылка для доступа:</p>
+                    <div class="share-section">
+                        <div class="share-link" id="shareLink"></div>
+                        <div class="btn-group">
+                            <button class="btn btn-secondary" id="copyLinkBtn">
+                                <span>
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                                        style="display:inline;vertical-align:middle">
+                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                                    </svg>
+                                    Ссылку
+                                </span>
+                            </button>
+                            <button class="btn btn-secondary" id="copyCodeBtn">
+                                <span>
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                                        style="display:inline;vertical-align:middle">
+                                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                                    </svg>
+                                    Код
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="view-container" id="viewContainer"
+                style="display: {% if mode == 'view' %}block{% else %}none{% endif %};">
+                <a href="/" class="back-btn">
+                    ← Создать новое
+                </a>
+
+                <div class="message-box" id="messageText">Загрузка...</div>
+
+                <div id="filesViewContainer"></div>
+
+                <div class="expiry-info">
+                    <strong>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                            style="display:inline;vertical-align:middle;margin-right:6px">
+                            <circle cx="12" cy="12" r="10" />
+                            <polyline points="12 6 12 12 16 14" />
+                        </svg>
+                        Срок действия:
+                    </strong> <span id="expiryTime"></span>
+                </div>
+            </div>
+
+            <div class="loading" id="loading" style="display: none;">
+                <svg class="loading-spinner" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" opacity="0.3" />
+                    <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="3">
+                        <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="1s"
+                            repeatCount="indefinite" />
+                    </path>
+                </svg>
+                <div>Загрузка...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">
+        <span id="toastText"></span>
+    </div>
+
+    <script>
+        const tg = window.Telegram?.WebApp;
+        if (tg) {
+            tg.expand();
+            tg.ready();
+            tg.setHeaderColor('#0a0a0f');
+        }
+
+        const API_URL = '{{ api_url }}';
+        const MODE = '{{ mode }}';
+        const URL_CODE = '{{ code }}';
+        const BASE_URL = window.location.origin;
+
+        let selectedFiles = [];
+        let selectedMinutes = 0;
+
+        document.querySelectorAll('.expiry-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('.expiry-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+
+                const minutes = this.dataset.minutes;
+                const customExpiry = document.getElementById('customExpiry');
+
+                if (minutes === 'custom') {
+                    customExpiry.classList.add('show');
+                    selectedMinutes = null;
+                } else {
+                    customExpiry.classList.remove('show');
+                    selectedMinutes = parseInt(minutes);
+                }
+            });
+        });
+
+        ['customDays', 'customHours', 'customMinutes'].forEach(id => {
+            document.getElementById(id)?.addEventListener('input', function () {
+                document.querySelectorAll('.expiry-btn').forEach(b => b.classList.remove('active'));
+                document.querySelector('[data-minutes="custom"]').classList.add('active');
+                document.getElementById('customExpiry').classList.add('show');
+            });
+        });
+
+        function getExpiryMinutes() {
+            if (selectedMinutes === null || document.getElementById('customExpiry').classList.contains('show')) {
+                const days = parseInt(document.getElementById('customDays').value) || 0;
+                const hours = parseInt(document.getElementById('customHours').value) || 0;
+                const minutes = parseInt(document.getElementById('customMinutes').value) || 0;
+
+                return days * 1440 + hours * 60 + minutes;
+            }
+            return selectedMinutes;
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastText = document.getElementById('toastText');
+            toastText.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        if (MODE === 'view' && URL_CODE && URL_CODE !== 'None') {
+            loadMessage(URL_CODE);
+        }
+
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const filesContainer = document.getElementById('filesContainer');
+        const filesList = document.getElementById('filesList');
+        const filesCount = document.getElementById('filesCount');
+
+        if (dropZone) {
+            dropZone.addEventListener('click', () => fileInput.click());
+
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('dragover');
+            });
+
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('dragover');
+            });
+
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+                const files = Array.from(e.dataTransfer.files);
+                addFiles(files);
+            });
+        }
+
+        if (fileInput) {
+            fileInput.addEventListener('change', (e) => {
+                const files = Array.from(e.target.files);
+                addFiles(files);
+                fileInput.value = '';
+            });
+        }
+
+        function addFiles(files) {
+            selectedFiles = [...selectedFiles, ...files];
+            updateFilesList();
+        }
+
+        function updateFilesList() {
+            if (selectedFiles.length === 0) {
+                filesContainer.classList.remove('show');
+                return;
+            }
+
+            filesContainer.classList.add('show');
+            const fileWord = selectedFiles.length === 1 ? 'файл' : selectedFiles.length < 5 ? 'файла' : 'файлов';
+            filesCount.textContent = `${selectedFiles.length} ${fileWord}`;
+
+            filesList.innerHTML = selectedFiles.map((file, index) => {
+                const icon = getFileIcon(file.name);
+                const size = formatFileSize(file.size);
+                return `
+                    <div class="file-item">
+                        <div class="file-icon">${icon}</div>
+                        <div class="file-info">
+                            <div class="file-name">${file.name}</div>
+                            <div class="file-size">${size}</div>
+                        </div>
+                        <span class="remove-file" onclick="removeFile(${index})">✕</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getFileIcon(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            const svgs = {
+                'pdf': '<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="40" rx="8" fill="#ef4444" opacity="0.2"/><path d="M12 10h10l6 6v14a2 2 0 0 1-2 2H14a2 2 0 0 1-2-2V12a2 2 0 0 1 2-2z" fill="#ef4444"/><text x="20" y="28" text-anchor="middle" fill="white" font-size="10" font-weight="bold">PDF</text></svg>',
+                'doc': '<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="40" rx="8" fill="#3b82f6" opacity="0.2"/><path d="M12 10h10l6 6v14a2 2 0 0 1-2 2H14a2 2 0 0 1-2-2V12a2 2 0 0 1 2-2z" fill="#3b82f6"/><text x="20" y="28" text-anchor="middle" fill="white" font-size="10" font-weight="bold">DOC</text></svg>',
+                'docx': '<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="40" rx="8" fill="#3b82f6" opacity="0.2"/><path d="M12 10h10l6 6v14a2 2 0 0 1-2 2H14a2 2 0 0 1-2-2V12a2 2 0 0 1 2-2z" fill="#3b82f6"/><text x="20" y="28" text-anchor="middle" fill="white" font-size="10" font-weight="bold">DOC</text></svg>',
+                'xls': '<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="40" rx="8" fill="#10b981" opacity="0.2"/><path d="M12 10h10l6 6v14a2 2 0 0 1-2 2H14a2 2 0 0 1-2-2V12a2 2 0 0 1 2-2z" fill="#10b981"/><text x="20" y="28" text-anchor="middle" fill="white" font-size="10" font-weight="bold">XLS</text></svg>',
+                'xlsx': '<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="40" rx="8" fill="#10b981" opacity="0.2"/><path d="M12 10h10l6 6v14a2 2 0 0 1-2 2H14a2 2 0 0 1-2-2V12a2 2 0 0 1 2-2z" fill="#10b981"/><text x="20" y="28" text-anchor="middle" fill="white" font-size="10" font-weight="bold">XLS</text></svg>',
+                'jpg': '<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="40" rx="8" fill="#8b5cf6" opacity="0.2"/><path d="M12 10h10l6 6v14a2 2 0 0 1-2 2H14a2 2 0 0 1-2-2V12a2 2 0 0 1 2-2z" fill="#8b5cf6"/><circle cx="20" cy="22" r="5" fill="white"/><path d="M14 30l4-5 3 3 5-6 4 8H14z" fill="white"/></svg>',
+                'jpeg': '<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="40" rx="8" fill="#8b5cf6" opacity="0.2"/><path d="M12 10h10l6 6v14a2 2 0 0 1-2 2H14a2 2 0 0 1-2-2V12a2 2 0 0 1 2-2z" fill="#8b5cf6"/><circle cx="20" cy="22" r="5" fill="white"/><path d="M14 30l4-5 3 3 5-6 4 8H14z" fill="white"/></svg>',
+                'png': '<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="40" rx="8" fill="#8b5cf6" opacity="0.2"/><path d="M12 10h10l6 6v14a2 2 0 0 1-2 2H14a2 2 0 0 1-2-2V12a2 2 0 0 1 2-2z" fill="#8b5cf6"/><circle cx="20" cy="22" r="5" fill="white"/><path d="M14 30l4-5 3 3 5-6 4 8H14z" fill="white"/></svg>',
+                'gif': '<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="40" rx="8" fill="#8b5cf6" opacity="0.2"/><path d="M12 10h10l6 6v14a2 2 0 0 1-2 2H14a2 2 0 0 1-2-2V12a2 2 0 0 1 2-2z" fill="#8b5cf6"/><circle cx="20" cy="22" r="5" fill="white"/><path d="M14 30l4-5 3 3 5-6 4 8H14z" fill="white"/></svg>',
+                'svg': '<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="40" rx="8" fill="#8b5cf6" opacity="0.2"/><path d="M12 10h10l6 6v14a2 2 0 0 1-2 2H14a2 2 0 0 1-2-2V12a2 2 0 0 1 2-2z" fill="#8b5cf6"/><circle cx="20" cy="22" r="5" fill="white"/><path d="M14 30l4-5 3 3 5-6 4 8H14z" fill="white"/></svg>',
+                'mp4': '<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="40" rx="8" fill="#ec4899" opacity="0.2"/><path d="M12 10h10l6 6v14a2 2 0 0 1-2 2H14a2 2 0 0 1-2-2V12a2 2 0 0 1 2-2z" fill="#ec4899"/><polygon points="18,16 18,28 28,22" fill="white"/></svg>',
+                'avi': '<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="40" rx="8" fill="#ec4899" opacity="0.2"/><path d="M12 10h10l6 6v14a2 2 0 0 1-2 2H14a2 2 0 0 1-2-2V12a2 2 0 0 1 2-2z" fill="#ec4899"/><polygon points="18,16 18,28 28,22" fill="white"/></svg>',
+                'mov': '<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="40" rx="8" fill="#ec4899" opacity="0.2"/><path d="M12 10h10l6 6v14a2 2 0 0 1-2 2H14a2 2 0 0 1-2-2V12a2 2 0 0 1 2-2z" fill="#ec4899"/><polygon points="18,16 18,28 28,22" fill="white"/></svg>',
+                'mp3': '<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="40" rx="8" fill="#f59e0b" opacity="0.2"/><path d="M12 10h10l6 6v14a2 2 0 0 1-2 2H14a2 2 0 0 1-2-2V12a2 2 0 0 1 2-2z" fill="#f59e0b"/><circle cx="20" cy="24" r="6" stroke="white" stroke-width="2" fill="none"/><path d="M20 18V14" stroke="white" stroke-width="2"/></svg>',
+                'wav': '<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="40" rx="8" fill="#f59e0b" opacity="0.2"/><path d="M12 10h10l6 6v14a2 2 0 0 1-2 2H14a2 2 0 0 1-2-2V12a2 2 0 0 1 2-2z" fill="#f59e0b"/><circle cx="20" cy="24" r="6" stroke="white" stroke-width="2" fill="none"/><path d="M20 18V14" stroke="white" stroke-width="2"/></svg>',
+                'zip': '<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="40" rx="8" fill="#6b7280" opacity="0.2"/><path d="M12 10h10l6 6v14a2 2 0 0 1-2 2H14a2 2 0 0 1-2-2V12a2 2 0 0 1 2-2z" fill="#6b7280"/><rect x="17" y="14" width="6" height="12" rx="1" fill="white"/><circle cx="20" cy="18" r="1.5" fill="#6b7280"/></svg>',
+                'rar': '<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="40" rx="8" fill="#6b7280" opacity="0.2"/><path d="M12 10h10l6 6v14a2 2 0 0 1-2 2H14a2 2 0 0 1-2-2V12a2 2 0 0 1 2-2z" fill="#6b7280"/><rect x="17" y="14" width="6" height="12" rx="1" fill="white"/><circle cx="20" cy="18" r="1.5" fill="#6b7280"/></svg>',
+                '7z': '<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="40" rx="8" fill="#6b7280" opacity="0.2"/><path d="M12 10h10l6 6v14a2 2 0 0 1-2 2H14a2 2 0 0 1-2-2V12a2 2 0 0 1 2-2z" fill="#6b7280"/><rect x="17" y="14" width="6" height="12" rx="1" fill="white"/><circle cx="20" cy="18" r="1.5" fill="#6b7280"/></svg>',
+                'txt': '<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="40" rx="8" fill="#6b7280" opacity="0.2"/><path d="M12 10h10l6 6v14a2 2 0 0 1-2 2H14a2 2 0 0 1-2-2V12a2 2 0 0 1 2-2z" fill="#6b7280"/><path d="M15 20h10M15 24h10M15 28h6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>',
+                'md': '<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="40" rx="8" fill="#6b7280" opacity="0.2"/><path d="M12 10h10l6 6v14a2 2 0 0 1-2 2H14a2 2 0 0 1-2-2V12a2 2 0 0 1 2-2z" fill="#6b7280"/><path d="M15 20h10M15 24h10M15 28h6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>',
+                'py': '<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="40" rx="8" fill="#3b82f6" opacity="0.2"/><path d="M12 10h10l6 6v14a2 2 0 0 1-2 2H14a2 2 0 0 1-2-2V12a2 2 0 0 1 2-2z" fill="#3b82f6"/><text x="20" y="27" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Py</text></svg>',
+                'js': '<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="40" rx="8" fill="#f59e0b" opacity="0.2"/><path d="M12 10h10l6 6v14a2 2 0 0 1-2 2H14a2 2 0 0 1-2-2V12a2 2 0 0 1 2-2z" fill="#f59e0b"/><text x="20" y="27" text-anchor="middle" fill="white" font-size="11" font-weight="bold">JS</text></svg>',
+                'html': '<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="40" rx="8" fill="#ef4444" opacity="0.2"/><path d="M12 10h10l6 6v14a2 2 0 0 1-2 2H14a2 2 0 0 1-2-2V12a2 2 0 0 1 2-2z" fill="#ef4444"/><text x="20" y="27" text-anchor="middle" fill="white" font-size="9" font-weight="bold">HTML</text></svg>',
+                'css': '<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="40" rx="8" fill="#3b82f6" opacity="0.2"/><path d="M12 10h10l6 6v14a2 2 0 0 1-2 2H14a2 2 0 0 1-2-2V12a2 2 0 0 1 2-2z" fill="#3b82f6"/><text x="20" y="27" text-anchor="middle" fill="white" font-size="10" font-weight="bold">CSS</text></svg>',
+                'json': '<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="40" rx="8" fill="#10b981" opacity="0.2"/><path d="M12 10h10l6 6v14a2 2 0 0 1-2 2H14a2 2 0 0 1-2-2V12a2 2 0 0 1 2-2z" fill="#10b981"/><text x="20" y="27" text-anchor="middle" fill="white" font-size="9" font-weight="bold">JSON</text></svg>'
+            };
+            return svgs[ext] || '<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="40" rx="8" fill="#6b7280" opacity="0.2"/><path d="M12 10h10l6 6v14a2 2 0 0 1-2 2H14a2 2 0 0 1-2-2V12a2 2 0 0 1 2-2z" fill="#6b7280"/><circle cx="20" cy="22" r="4" fill="white"/></svg>';
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        function removeFile(index) {
+            selectedFiles.splice(index, 1);
+            updateFilesList();
+        }
+
+        const clearAllBtn = document.getElementById('clearAll');
+        if (clearAllBtn) {
+            clearAllBtn.addEventListener('click', () => {
+                selectedFiles = [];
+                updateFilesList();
+            });
+        }
+
+        const createBtn = document.getElementById('createBtn');
+        if (createBtn) {
+            createBtn.addEventListener('click', async function () {
+                const message = document.getElementById('message').value.trim();
+                const expiryMinutes = getExpiryMinutes();
+                const errorDiv = document.getElementById('error');
+                const btn = this;
+
+                errorDiv.classList.remove('show');
+                errorDiv.textContent = '';
+
+                if (!message && selectedFiles.length === 0) {
+                    errorDiv.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:6px"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>Введите текст сообщения или выберите файлы!';
+                    errorDiv.classList.add('show');
+                    return;
+                }
+
+                btn.disabled = true;
+                btn.innerHTML = '<span><svg class="btn-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" opacity="0.3"/><path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="3"><animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="1s" repeatCount="indefinite"/></path></svg><span>Создание...</span></span>';
+
+                try {
+                    const formData = new FormData();
+                    formData.append('msgtext', message);
+                    formData.append('expiry_delta_minutes', expiryMinutes > 0 ? expiryMinutes : '');
+
+                    selectedFiles.forEach((file) => {
+                        formData.append('files', file);
+                    });
+
+                    const response = await fetch(`${API_URL}/create`, {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.detail || 'Ошибка создания сообщения');
+                    }
+
+                    const data = await response.json();
+                    const shareUrl = `${BASE_URL}/${data.url_code}`;
+
+                    document.getElementById('shareLink').textContent = shareUrl;
+                    document.getElementById('result').classList.add('show');
+
+                    document.getElementById('result').dataset.code = data.url_code;
+                    document.getElementById('result').dataset.url = shareUrl;
+
+                    document.getElementById('message').value = '';
+                    document.querySelectorAll('.expiry-btn').forEach(b => b.classList.remove('active'));
+                    document.getElementById('customExpiry').classList.remove('show');
+                    document.getElementById('customDays').value = 0;
+                    document.getElementById('customHours').value = 0;
+                    document.getElementById('customMinutes').value = 0;
+                    selectedMinutes = 0;
+                    selectedFiles = [];
+                    updateFilesList();
+
+                    showToast('✅ Сообщение создано!');
+
+                } catch (error) {
+                    errorDiv.textContent = '❌ ' + error.message;
+                    errorDiv.classList.add('show');
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = '<span><svg class="btn-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="currentColor"/></svg><span>Создать сообщение</span></span>';
+                }
+            });
+        }
+
+        const copyLinkBtn = document.getElementById('copyLinkBtn');
+        if (copyLinkBtn) {
+            copyLinkBtn.addEventListener('click', function () {
+                const url = document.getElementById('result').dataset.url;
+                copyToClipboard(url, '✅ Ссылка скопирована');
+            });
+        }
+
+        const copyCodeBtn = document.getElementById('copyCodeBtn');
+        if (copyCodeBtn) {
+            copyCodeBtn.addEventListener('click', function () {
+                const code = document.getElementById('result').dataset.code;
+                copyToClipboard(code, '✅ Код скопирован');
+            });
+        }
+
+        function copyToClipboard(text, successMessage) {
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showToast(successMessage);
+                });
+            } else {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                textarea.style.position = 'fixed';
+                textarea.style.opacity = '0';
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                showToast(successMessage);
+            }
+        }
+
+        async function loadMessage(code) {
+            const messageText = document.getElementById('messageText');
+            if (!messageText) return;
+
+            messageText.textContent = 'Загрузка...';
+
+            try {
+                const response = await fetch(`${API_URL}/view/${code}`);
+
+                if (!response.ok) {
+                    throw new Error('Сообщение не найдено или истекло');
+                }
+
+                const data = await response.json();
+
+                messageText.textContent = data.message_text || '📭 Текст отсутствует';
+
+                const expiryElement = document.getElementById('expiryTime');
+                if (data.expired_at) {
+                    const expiryDate = new Date(data.expired_at);
+                    const now = new Date();
+                    const timeDiff = expiryDate - now;
+
+                    if (timeDiff > 0) {
+                        const hours = Math.floor(timeDiff / (1000 * 60 * 60));
+                        const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+
+                        if (hours > 24) {
+                            const days = Math.floor(hours / 24);
+                            expiryElement.textContent = `${days} дн. ${hours % 24} ч. осталось`;
+                        } else if (hours > 0) {
+                            expiryElement.textContent = `${hours} ч. ${minutes} мин. осталось`;
+                        } else {
+                            expiryElement.textContent = `${minutes} мин. осталось`;
+                        }
+                    } else {
+                        expiryElement.textContent = 'Истекает';
+                    }
+                } else {
+                    expiryElement.textContent = 'Бессрочно';
+                }
+
+                const filesViewContainer = document.getElementById('filesViewContainer');
+                if (data.files && data.files.length > 0) {
+                    filesViewContainer.innerHTML = `<div class="files-title">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:8px">
+                            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49 9 9 0 0 1 12.73-12.73A6 6 0 0 1 21.44 11.05z"/>
+                            <line x1="12" y1="8" x2="12" y2="12"/>
+                            <line x1="12" y1="16" x2="12.01" y2="16"/>
+                        </svg>
+                        Файлы
+                    </div>` +
+                        data.files.map(file => {
+                            const icon = getFileIcon(file.filename);
+                            return `
+                                <a href="${file.download_url}" class="download-btn" download="${file.filename}">
+                                    <svg class="download-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                        <polyline points="7 10 12 15 17 10"/>
+                                        <line x1="12" y1="15" x2="12" y2="3"/>
+                                    </svg>
+                                    <span>${file.filename}</span>
+                                </a>
+                            `;
+                        }).join('');
+                }
+
+            } catch (error) {
+                messageText.innerHTML = `<div style="text-align: center; color: var(--danger); font-weight: 700;">❌ ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+
+</html>
