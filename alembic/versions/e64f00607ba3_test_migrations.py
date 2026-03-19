@@ -1,18 +1,15 @@
 """test migrations
 
 Revision ID: e64f00607ba3
-Revises: 
+Revises:
 Create Date: 2025-11-22 06:59:38.364566
 
 """
+
 from typing import Sequence, Union
 
-from alembic import op
-import sqlalchemy as sa
-
-
 # revision identifiers, used by Alembic.
-revision: str = 'e64f00607ba3'
+revision: str = "e64f00607ba3"
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
