@@ -5,6 +5,14 @@
 
 ---
 
+
+## 📷 Скриншоты / Screenshots
+![pic](images/1.png)
+![pic](images/2.png)
+![pic](images/3.png)
+![pic](images/4.png)
+
+
 ## 📖 Описание / Description
 
 A modern, privacy-focused web application that allows you to create secure, self-destructing messages with optional file attachments. Messages automatically expire after a configurable time period, ensuring your sensitive information doesn't linger indefinitely.
